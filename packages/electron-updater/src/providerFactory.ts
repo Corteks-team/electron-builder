@@ -1,9 +1,10 @@
-import { AllPublishOptions, BaseS3Options, BintrayOptions, GenericServerOptions, getS3LikeProviderBaseUrl, GithubOptions, newError, PublishConfiguration } from "builder-util-runtime"
+import { AllPublishOptions, BaseS3Options, BintrayOptions, GenericServerOptions, OpenstackOptions, getS3LikeProviderBaseUrl, GithubOptions, newError, PublishConfiguration } from "builder-util-runtime"
 import { AppUpdater } from "./AppUpdater"
 import { BintrayProvider } from "./providers/BintrayProvider"
 import { GenericProvider } from "./providers/GenericProvider"
 import { GitHubProvider } from "./providers/GitHubProvider"
 import { PrivateGitHubProvider } from "./providers/PrivateGitHubProvider"
+import { OpenstackProvider } from "./providers/OpenstackProvider"
 import { Provider, ProviderRuntimeOptions } from "./providers/Provider"
 
 export function isUrlProbablySupportMultiRangeRequests(url: string): boolean {
@@ -51,6 +52,9 @@ export function createClient(data: PublishConfiguration | AllPublishOptions, upd
 
     case "bintray":
       return new BintrayProvider(data as BintrayOptions, runtimeOptions)
+
+    case "openstack":
+      return new OpenstackProvider(data as OpenstackOptions, updater, runtimeOptions)
 
     default:
       throw newError(`Unsupported provider: ${provider}`, "ERR_UPDATER_UNSUPPORTED_PROVIDER")

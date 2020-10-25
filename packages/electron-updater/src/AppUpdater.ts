@@ -196,7 +196,7 @@ export abstract class AppUpdater extends EventEmitter {
     // https://github.com/electron-userland/electron-builder/issues/1105
     let provider: Provider<any>
     if (typeof options === "string") {
-      provider = new GenericProvider({provider: "generic", url: options}, this, {
+      provider = new GenericProvider({ provider: "generic", url: options }, this, {
         ...runtimeOptions,
         isUseMultipleRangeRequest: isUrlProbablySupportMultiRangeRequests(options),
       })
@@ -350,7 +350,7 @@ export abstract class AppUpdater extends EventEmitter {
 
     const client = await this.clientPromise
     const stagingUserId = await this.stagingUserIdPromise.value
-    client.setRequestHeaders(this.computeFinalHeaders({"x-user-staging-id": stagingUserId}))
+    client.setRequestHeaders(this.computeFinalHeaders({ "x-user-staging-id": stagingUserId }))
     return {
       info: await client.getLatestVersion(),
       provider: client,
@@ -398,15 +398,25 @@ export abstract class AppUpdater extends EventEmitter {
     this.emit("update-available", updateInfo)
   }
 
+  private checkUpdateInfoAndProvider(): UpdateInfoAndProvider {
+    if (this.updateInfoAndProvider === null) {
+      const error = new Error("Please check update first")
+      this.dispatchError(error)
+      throw error
+    }
+    return this.updateInfoAndProvider
+  }
+
   /**
    * Start downloading update manually. You can use this method if `autoDownload` option is set to `false`.
    * @returns {Promise<string>} Path to downloaded file.
    */
-  downloadUpdate(cancellationToken: CancellationToken = new CancellationToken()): Promise<any> {
-    const updateInfoAndProvider = this.updateInfoAndProvider
-    if (updateInfoAndProvider == null) {
-      const error = new Error("Please check update first")
-      this.dispatchError(error)
+  async downloadUpdate(cancellationToken: CancellationToken = new CancellationToken()): Promise<any> {
+    let updateInfoAndProvider;
+    try {
+      updateInfoAndProvider = this.checkUpdateInfoAndProvider()
+    }
+    catch (error) {
       return Promise.reject(error)
     }
 
@@ -450,6 +460,28 @@ export abstract class AppUpdater extends EventEmitter {
 
   protected async abstract doDownloadUpdate(downloadUpdateOptions: DownloadUpdateOptions): Promise<Array<string>>
 
+  protected async download(url: URL, destination: string, options: DownloadOptions): Promise<string> {
+    let updateInfoAndProvider;
+    try {
+      updateInfoAndProvider = this.checkUpdateInfoAndProvider()
+    }
+    catch (error) {
+      return Promise.reject(error)
+    }
+    return await updateInfoAndProvider.provider.download(url, destination, options)
+  }
+
+  protected async downloadToBuffer(url: URL, options: DownloadOptions): Promise<any> {
+    let updateInfoAndProvider;
+    try {
+      updateInfoAndProvider = this.checkUpdateInfoAndProvider()
+    }
+    catch (error) {
+      return Promise.reject(error)
+    }
+    return updateInfoAndProvider.provider.downloadToBuffer(url, options);
+  }
+
   /**
    * Restarts the app and installs the update after it has been downloaded.
    * It should only be called after `update-downloaded` has been emitted.
@@ -478,7 +510,7 @@ export abstract class AppUpdater extends EventEmitter {
         ...requestHeaders,
       }
     }
-    return this.computeFinalHeaders({accept: "*/*"})
+    return this.computeFinalHeaders({ accept: "*/*" })
   }
 
   private async getOrCreateStagingUserId(): Promise<string> {

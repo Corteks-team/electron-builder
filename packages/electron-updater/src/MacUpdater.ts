@@ -52,7 +52,7 @@ export class MacUpdater extends AppUpdater {
       fileInfo: zipFileInfo,
       downloadUpdateOptions,
       task: (destinationFile, downloadOptions) => {
-        return this.httpExecutor.download(zipFileInfo.url, destinationFile, downloadOptions)
+        return this.download(zipFileInfo.url, destinationFile, downloadOptions)
       },
       done: async event => {
         const downloadedFile = event.downloadedFile
@@ -70,7 +70,7 @@ export class MacUpdater extends AppUpdater {
             this._logger.info(`${requestUrl} requested`)
             if (requestUrl === "/") {
               const data = Buffer.from(`{ "url": "${getServerUrl()}${fileUrl}" }`)
-              response.writeHead(200, {"Content-Type": "application/json", "Content-Length": data.length})
+              response.writeHead(200, { "Content-Type": "application/json", "Content-Length": data.length })
               response.end(data)
               return
             }
@@ -119,7 +119,7 @@ export class MacUpdater extends AppUpdater {
           server.listen(0, "127.0.0.1", () => {
             this.nativeUpdater.setFeedURL({
               url: getServerUrl(),
-              headers: {"Cache-Control": "no-cache"},
+              headers: { "Cache-Control": "no-cache" },
             })
 
             this.nativeUpdater.once("error", reject)

@@ -18,12 +18,15 @@
     "js-yaml": "^3.14.0",
     "lazy-val": "^1.0.4",
     "lodash.isequal": "^4.5.0",
+    "pkgcloud": "^2.2.0",
     "semver": "^7.3.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.1",
     "@types/js-yaml": "^3.12.5",
-    "@types/lodash.isequal": "^4.5.5"
+    "@types/lodash.isequal": "^4.5.5",
+    "@types/node": "^10.0.0",
+    "@types/pkgcloud": "^1.7.4"
   },
   "typings": "./out/main.d.ts",
   "publishConfig": {

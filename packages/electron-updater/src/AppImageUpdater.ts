@@ -59,7 +59,7 @@ export class AppImageUpdater extends BaseUpdater {
         }
 
         if (isDownloadFull) {
-          await this.httpExecutor.download(fileInfo.url, updateFile, downloadOptions)
+          await this.download(fileInfo.url, updateFile, downloadOptions)
         }
 
         await chmod(updateFile, 0o755)
@@ -105,7 +105,7 @@ export class AppImageUpdater extends BaseUpdater {
     }
     else {
       env.APPIMAGE_EXIT_AFTER_INSTALL = "true"
-      execFileSync(destination, [], {env})
+      execFileSync(destination, [], { env })
     }
     return true
   }

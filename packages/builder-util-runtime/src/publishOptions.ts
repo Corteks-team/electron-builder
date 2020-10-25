@@ -1,9 +1,10 @@
 import { OutgoingHttpHeaders } from "http"
+import { OpenstackProviderOptions } from "pkgcloud"
 
-export type PublishProvider = "github" | "bintray" | "s3" | "spaces" | "generic" | "custom" | "snapStore"
+export type PublishProvider = "github" | "bintray" | "s3" | "spaces" | "generic" | "custom" | "snapStore" | "openstack"
 
 // typescript-json-schema generates only PublishConfiguration if it is specified in the list, so, it is not added here
-export type AllPublishOptions = string | GithubOptions | S3Options | SpacesOptions | GenericServerOptions | BintrayOptions | CustomPublishOptions
+export type AllPublishOptions = string | GithubOptions | S3Options | SpacesOptions | GenericServerOptions | BintrayOptions | OpenstackOptions | CustomPublishOptions
 
 export interface PublishConfiguration {
   /**
@@ -321,4 +322,20 @@ export interface BintrayOptions extends PublishConfiguration {
   readonly user?: string | null
 
   readonly token?: string | null
+}
+
+/**
+ * Openstack options.
+ */
+export interface OpenstackOptions extends PublishConfiguration, OpenstackProviderOptions {
+  /**
+   * The provider. Must be `openstack`.
+   */
+  readonly provider: "openstack"
+
+  /**
+   * The channel.
+   * @default latest
+   */
+  readonly channel?: string | null
 }

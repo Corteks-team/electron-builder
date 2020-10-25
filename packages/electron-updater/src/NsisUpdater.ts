@@ -30,7 +30,7 @@ export class NsisUpdater extends BaseUpdater {
         const packageInfo = fileInfo.packageInfo
         const isWebInstaller = packageInfo != null && packageFile != null
         if (isWebInstaller || await this.differentialDownloadInstaller(fileInfo, downloadUpdateOptions, destinationFile, provider)) {
-          await this.httpExecutor.download(fileInfo.url, destinationFile, downloadOptions)
+          await this.download(fileInfo.url, destinationFile, downloadOptions)
         }
 
         const signatureVerificationStatus = await this.verifySignature(destinationFile)
@@ -43,7 +43,7 @@ export class NsisUpdater extends BaseUpdater {
         if (isWebInstaller) {
           if (await this.differentialDownloadWebPackage(packageInfo!!, packageFile!!, provider)) {
             try {
-              await this.httpExecutor.download(new URL(packageInfo!!.path), packageFile!!, {
+              await this.download(new URL(packageInfo!!.path), packageFile!!, {
                 headers: downloadUpdateOptions.requestHeaders,
                 cancellationToken: downloadUpdateOptions.cancellationToken,
                 sha512: packageInfo!!.sha512,
@@ -140,7 +140,7 @@ export class NsisUpdater extends BaseUpdater {
       this._logger.info(`Download block maps (old: "${oldBlockMapUrl.href}", new: ${newBlockMapUrl.href})`)
 
       const downloadBlockMap = async (url: URL): Promise<BlockMap> => {
-        const data = await this.httpExecutor.downloadToBuffer(url, {
+        const data = await this.downloadToBuffer(url, {
           headers: downloadUpdateOptions.requestHeaders,
           cancellationToken: downloadUpdateOptions.cancellationToken,
         })

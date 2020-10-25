@@ -1,7 +1,8 @@
-import { CancellationToken, HttpExecutor, newError, safeStringifyJson, UpdateFileInfo, UpdateInfo, WindowsUpdateInfo, configureRequestUrl } from "builder-util-runtime"
+import { CancellationToken, newError, safeStringifyJson, UpdateFileInfo, UpdateInfo, WindowsUpdateInfo, configureRequestUrl, DownloadOptions } from "builder-util-runtime"
 import { OutgoingHttpHeaders, RequestOptions } from "http"
 import { safeLoad } from "js-yaml"
 import { URL } from "url"
+import { ElectronHttpExecutor } from "../electronHttpExecutor"
 import { newUrlFromBase, ResolvedUpdateFileInfo } from "../main"
 
 export type ProviderPlatform = "darwin" | "linux" | "win32"
@@ -10,12 +11,12 @@ export interface ProviderRuntimeOptions {
   isUseMultipleRangeRequest: boolean
   platform: ProviderPlatform
 
-  executor: HttpExecutor<any>
+  executor: ElectronHttpExecutor
 }
 
 export abstract class Provider<T extends UpdateInfo> {
   private requestHeaders: OutgoingHttpHeaders | null = null
-  protected readonly executor: HttpExecutor<any>
+  protected readonly executor: ElectronHttpExecutor
 
   protected constructor(private readonly runtimeOptions: ProviderRuntimeOptions) {
     this.executor = runtimeOptions.executor
@@ -72,15 +73,23 @@ export abstract class Provider<T extends UpdateInfo> {
       }
     }
     else {
-      result.headers = headers == null ? this.requestHeaders : {...this.requestHeaders, ...headers}
+      result.headers = headers == null ? this.requestHeaders : { ...this.requestHeaders, ...headers }
     }
 
     configureRequestUrl(url, result)
     return result
   }
+
+  async download(url: URL, destination: string, options: DownloadOptions): Promise<string> {
+    return await this.executor.download(url, destination, options)
+  }
+
+  async downloadToBuffer(url: URL, options: DownloadOptions): Promise<any> {
+    return this.executor.downloadToBuffer(url, options);
+  }
 }
 
-export function findFile(files: Array<ResolvedUpdateFileInfo>, extension: string, not?: Array<string>): ResolvedUpdateFileInfo | null | undefined  {
+export function findFile(files: Array<ResolvedUpdateFileInfo>, extension: string, not?: Array<string>): ResolvedUpdateFileInfo | null | undefined {
   if (files.length === 0) {
     throw newError("No files provided", "ERR_UPDATER_NO_FILES_PROVIDED")
   }

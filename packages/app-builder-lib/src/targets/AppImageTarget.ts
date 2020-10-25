@@ -2,7 +2,6 @@ import { Arch, serializeToYaml } from "builder-util"
 import { outputFile } from "fs-extra"
 import { Lazy } from "lazy-val"
 import * as path from "path"
-import * as semver from "semver"
 import { AppImageOptions } from ".."
 import { Target } from "../core"
 import { LinuxPackager } from "../linuxPackager"
@@ -14,7 +13,7 @@ import { createStageDir } from "./targetUtil"
 
 // https://unix.stackexchange.com/questions/375191/append-to-sub-directory-inside-squashfs-file
 export default class AppImageTarget extends Target {
-  readonly options: AppImageOptions = {...this.packager.platformSpecificBuildOptions, ...(this.packager.config as any)[this.name]}
+  readonly options: AppImageOptions = { ...this.packager.platformSpecificBuildOptions, ...(this.packager.config as any)[this.name] }
   private readonly desktopEntry: Lazy<string>
 
   constructor(ignored: string, private readonly packager: LinuxPackager, private readonly helper: LinuxTargetHelper, readonly outDir: string) {
@@ -54,7 +53,7 @@ export default class AppImageTarget extends Target {
       await outputFile(path.join(packager.getResourcesDir(stageDir.dir), "app-update.yml"), serializeToYaml(publishConfig))
     }
 
-    if (this.packager.packagerOptions.effectiveOptionComputed != null && await this.packager.packagerOptions.effectiveOptionComputed({desktop: await this.desktopEntry.value})) {
+    if (this.packager.packagerOptions.effectiveOptionComputed != null && await this.packager.packagerOptions.effectiveOptionComputed({ desktop: await this.desktopEntry.value })) {
       return
     }
 
