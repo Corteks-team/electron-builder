@@ -1,5 +1,4 @@
 import { OutgoingHttpHeaders } from "http"
-import { OpenstackProviderOptions } from "pkgcloud"
 
 export type PublishProvider = "github" | "bintray" | "s3" | "spaces" | "generic" | "custom" | "snapStore" | "openstack"
 
@@ -327,7 +326,7 @@ export interface BintrayOptions extends PublishConfiguration {
 /**
  * Openstack options.
  */
-export interface OpenstackOptions extends PublishConfiguration, OpenstackProviderOptions {
+export interface OpenstackOptions extends PublishConfiguration {
   /**
    * The provider. Must be `openstack`.
    */
@@ -338,4 +337,24 @@ export interface OpenstackOptions extends PublishConfiguration, OpenstackProvide
    * @default latest
    */
   readonly channel?: string | null
+
+  username: string
+
+  password: string
+
+  authUrl: string
+
+  region?: string
+
+  tenantId?: string
+
+  version?: string
+
+  keystoneAuthVersion?: string
+
+  domainId?: string
+
+  domainName?: string
+
+  container: string
 }

@@ -6,7 +6,6 @@ import { storage } from 'pkgcloud';
 import fs from "fs"
 
 type Client = storage.Client;
-type File = storage.File;
 
 export class OpenstackProvider extends Provider<UpdateInfo> {
   private readonly baseUrl = newBaseUrl(this.configuration.authUrl)
@@ -19,13 +18,13 @@ export class OpenstackProvider extends Provider<UpdateInfo> {
     return storage.createClient({
       authUrl: this.baseUrl.href,
       domainId: 'default',
-      domainName: this.configuration.tenantName,
-      keystoneAuthVersion: this.configuration.apiVersion,
-      password: process.env.UPDATE_USER_PASSWORD,
+      domainName: this.configuration.domainName,
+      keystoneAuthVersion: this.configuration.keystoneAuthVersion,
+      password: this.configuration.password,
       provider: 'openstack',
       region: this.configuration.region,
       tenantId: this.configuration.tenantId,
-      username: process.env.UPDATE_USER_NAME,
+      username: this.configuration.username,
     });
   }
 
@@ -39,7 +38,7 @@ export class OpenstackProvider extends Provider<UpdateInfo> {
     const channelUrl = newUrlFromBase(channelFile, this.baseUrl, this.updater.isAddNoCacheQuery)
     for (let attemptNumber = 0; ; attemptNumber++) {
       try {
-        return parseUpdateInfo(await this.request(channelUrl), channelFile, channelUrl)
+        return parseUpdateInfo(await this.request(channelUrl.href), channelFile, channelUrl)
       }
       catch (e) {
         if (e instanceof HttpError && e.statusCode === 404) {
@@ -63,14 +62,14 @@ export class OpenstackProvider extends Provider<UpdateInfo> {
     }
   }
 
-  private async request(channelUrl: string): Promise<any> {
+  private async request(channelUrl: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const stream: NodeJS.ReadStream = this.client.download({
         container: this.configuration.container,
         remote: channelUrl,
       })
 
-      let result: any = [];
+      let result: string[] = [];
       stream.on('error', (err: any) => {
         reject(err)
       })
@@ -80,7 +79,7 @@ export class OpenstackProvider extends Provider<UpdateInfo> {
       })
 
       stream.on('end', () => {
-        resolve(result)
+        resolve(result.join())
       })
     })
   }
@@ -90,7 +89,7 @@ export class OpenstackProvider extends Provider<UpdateInfo> {
   }
 
   async download(url: URL, destination: string, _: DownloadOptions): Promise<string> {
-    const data = this.request(url.href)
+    const data = await this.request(url.href)
     fs.writeFileSync(destination, data)
     return data;
   }
